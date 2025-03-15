@@ -1,13 +1,33 @@
+// const mongoose = require("mongoose");
+
+// const ContestSchema = new mongoose.Schema({
+//     title: { type: String, unique: true }, // Prevent duplicate contests
+//     platform: String,
+//     start_time: Date,
+//     duration: Number,
+//     url: String,
+//     past: Boolean,
+//     solution_link: String,
+//     bookmarked: { type: Boolean, default: false }
+// });
+
+// // Add indexes for faster searching
+// ContestSchema.index({ platform: 1, start_time: 1 });
+
+// module.exports = mongoose.model("Contest", ContestSchema);
+
+
 const mongoose = require("mongoose");
 
-const ContestSchema = new mongoose.Schema({
-    title: String,
-    platform: String, // "LeetCode", "Codeforces", "CodeChef"
-    start_time: Date,
-    duration: Number, // In minutes
-    url: String,
-    past: Boolean, // true if the contest has ended
-    solution_link: String, // YouTube link (if available)
+const contestSchema = new mongoose.Schema({
+    title: { type: String, required: true },
+    platform: { type: String, required: true },
+    start_time: { type: Date },
+    duration: { type: Number, required: true }, // in minutes
+    url: { type: String, required: true },
+    past: { type: Boolean, default: false },
+    bookmarked: { type: Boolean, default: false },
+    solution_link: { type: String } // Optional: YouTube solution link
 });
 
-module.exports = mongoose.model("Contest", ContestSchema);
+module.exports = mongoose.model("Contest", contestSchema);

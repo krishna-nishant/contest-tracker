@@ -1,9 +1,9 @@
 const puppeteer = require("puppeteer");
 
-// Function to scrape LeetCode contests
-const scrapeLeetCodeContests = async () => {
+const fetchLeetCodeContests = async () => {
     try {
         const url = "https://leetcode.com/contest/";
+        console.log("🔍 Scraping LeetCode contests...");
 
         const browser = await puppeteer.launch({
             executablePath: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
@@ -12,37 +12,40 @@ const scrapeLeetCodeContests = async () => {
         });
 
         const page = await browser.newPage();
-        await page.setDefaultNavigationTimeout(30000);
+        await page.setDefaultNavigationTimeout(60000);
 
+        // Bypass bot detection
         await page.evaluateOnNewDocument(() => {
             Object.defineProperty(navigator, "webdriver", { get: () => false });
         });
 
-        await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
+        await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
 
-        // Scroll to load all contests
-        await page.evaluate(async () => {
-            await new Promise((resolve) => {
-                let totalHeight = 0;
-                const distance = 100;
-                const timer = setInterval(() => {
-                    window.scrollBy(0, distance);
-                    totalHeight += distance;
-                    if (totalHeight >= document.body.scrollHeight) {
-                        clearInterval(timer);
-                        resolve();
-                    }
-                }, 200);
-            });
-        });
+        // **🚀 Fixed Scrolling: Keep scrolling until no change for 5 iterations**
+        let previousHeight = 0;
+        let unchangedScrolls = 0;
 
-        await new Promise(resolve => setTimeout(resolve, 5000)); // Wait extra time
+        while (unchangedScrolls < 5) {  
+            let newHeight = await page.evaluate(() => document.body.scrollHeight);
 
-        // Extract contests safely
+            if (newHeight === previousHeight) {
+                unchangedScrolls++;
+            } else {
+                unchangedScrolls = 0;  // Reset counter if new content is found
+            }
+
+            await page.evaluate(() => window.scrollBy(0, 1000));
+            await new Promise((resolve) => setTimeout(resolve, 1500));  // Delay for loading
+            previousHeight = newHeight;
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 5000)); // Extra wait
+
+        // **Extract contests safely**
         let contests = await page.evaluate(() => {
             const contestList = [];
 
-            // Extract Upcoming Contests
+            // **Upcoming Contests**
             document.querySelectorAll(".group a[href^='/contest/']").forEach((element) => {
                 const titleElement = element.querySelector(".truncate span");
                 const title = titleElement ? titleElement.innerText.trim() : null;
@@ -66,17 +69,15 @@ const scrapeLeetCodeContests = async () => {
                 }
             });
 
-            // Extract Past Contests
-            document.querySelectorAll("[class*='text-label-3']").forEach((timeElement) => {
-                const contestDiv = timeElement.closest(".group");
-                if (!contestDiv) return;
-
-                const titleElement = contestDiv.querySelector(".truncate span");
+            // **Past Contests**
+            document.querySelectorAll("a[href^='/contest/']").forEach((element) => {
+                const titleElement = element.querySelector(".truncate span");
                 const title = titleElement ? titleElement.innerText.trim() : null;
 
-                const startTimeText = timeElement ? timeElement.innerText.trim() : null;
+                const startTimeElement = element.closest(".group")?.querySelector("[class*='text-label-3']");
+                const startTimeText = startTimeElement ? startTimeElement.innerText.trim() : null;
 
-                const contestLink = contestDiv.querySelector("a[href^='/contest/']")?.getAttribute("href");
+                const contestLink = element.getAttribute("href");
                 const contestUrl = contestLink ? `https://leetcode.com${contestLink}` : "https://leetcode.com/contest/";
 
                 if (title && startTimeText) {
@@ -96,7 +97,7 @@ const scrapeLeetCodeContests = async () => {
 
         await browser.close();
 
-        // Convert "Starts in" to a real Date for upcoming contests
+        // **Convert "Starts in" to real Date for upcoming contests**
         contests = contests.map(contest => {
             if (!contest.past) {
                 const match = contest.starts_in.match(/(\d+)h (\d+)m (\d+)s/);
@@ -109,13 +110,17 @@ const scrapeLeetCodeContests = async () => {
                     contest.start_time = startDate;
                 }
             } else {
+                if (contest.start_time.toLowerCase() === "ended") {
+                    console.warn(`⚠️ Skipping invalid contest date for ${contest.title}`);
+                    return null; // Ignore contests with 'Ended' as start time
+                }
                 contest.start_time = convertLeetCodeDate(contest.start_time);
             }
             return contest;
-        });
+        }).filter(Boolean);  // Remove null entries
 
-        // Keep only the last 3 past contests
-        const pastContests = contests.filter(contest => contest.past).slice(-3);
+        // **Ensure 10+ Past Contests**
+        const pastContests = contests.filter(contest => contest.past).slice(-10);
         const upcomingContests = contests.filter(contest => !contest.past);
 
         console.log("✅ LeetCode Contests Fetched:", [...upcomingContests, ...pastContests]);
@@ -126,10 +131,9 @@ const scrapeLeetCodeContests = async () => {
     }
 };
 
-// Function to convert LeetCode's past contest date format to JavaScript Date
+// **Convert LeetCode's past contest date format to JavaScript Date**
 const convertLeetCodeDate = (dateString) => {
     try {
-        // Example: "Mar 9, 2025 8:00 AM GMT+5:30"
         const months = {
             "Jan": "01", "Feb": "02", "Mar": "03", "Apr": "04",
             "May": "05", "Jun": "06", "Jul": "07", "Aug": "08",
@@ -152,4 +156,4 @@ const convertLeetCodeDate = (dateString) => {
     }
 };
 
-module.exports = scrapeLeetCodeContests;
+module.exports = fetchLeetCodeContests;

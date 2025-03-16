@@ -63,11 +63,11 @@ export const fetchPastContests = async () => {
   }
 }
 
-// Toggle bookmark status for a contest
+// Toggle bookmark status for a contest - FIXED
 export const toggleBookmark = async (contestId) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/contests/${contestId}/bookmark`, {
-      method: "PUT",
+    const response = await fetch(`${API_BASE_URL}/contests/bookmark/${contestId}`, {
+      method: "POST", // Changed from PUT to POST to match your backend
       headers: {
         "Content-Type": "application/json",
       },
@@ -84,11 +84,11 @@ export const toggleBookmark = async (contestId) => {
   }
 }
 
-// Add solution link to a contest
+// Add solution link to a contest - FIXED
 export const addSolutionLink = async (contestId, solutionLink) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/contests/${contestId}/solution`, {
-      method: "PUT",
+    const response = await fetch(`${API_BASE_URL}/contests/solution/${contestId}`, {
+      method: "POST", // Changed from PUT to POST to match your backend
       headers: {
         "Content-Type": "application/json",
       },

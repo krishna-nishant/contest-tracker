@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom"
 import { cn } from "../lib/utils"
 import { Button } from "@/components/ui/button"
 import { Calendar, Bookmark, Video } from "lucide-react"
+import { ModeToggle } from "./ModeToggle"
 
 function MainNav() {
   const location = useLocation()
@@ -52,6 +53,10 @@ function MainNav() {
               Today's Contests
             </Button>
           </div>
+
+          {/* Theme toggle button */}
+          <ModeToggle />
+
           <nav className="flex items-center md:hidden">
             <Link
               to="/"

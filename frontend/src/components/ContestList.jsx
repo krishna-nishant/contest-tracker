@@ -9,7 +9,6 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Bookmark, ExternalLink, Calendar, Clock, Video } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useToast } from "../hooks/use-toast"
 import { toast } from "sonner"
 
 function ContestList() {
@@ -17,7 +16,6 @@ function ContestList() {
   const [loading, setLoading] = useState(true)
   const [platform, setPlatform] = useState("all")
   const [past, setPast] = useState("false")
-  const { toast: useToastFn } = useToast()
 
   useEffect(() => {
     loadContests()
@@ -26,7 +24,6 @@ function ContestList() {
   const loadContests = async () => {
     setLoading(true)
     try {
-      // Use the actual API endpoint
       const platformParam = platform !== "all" ? platform : ""
       const data = await fetchContests(platformParam, past)
       setContests(data)
@@ -118,11 +115,11 @@ function ContestList() {
       </div>
 
       {loading ? (
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <Card key={i} className="overflow-hidden">
               <CardContent className="p-0">
-                <div className="p-6 flex flex-col sm:flex-row justify-between gap-4">
+                <div className="p-6 flex flex-col justify-between gap-4">
                   <div className="space-y-2">
                     <Skeleton className="h-5 w-[250px]" />
                     <Skeleton className="h-4 w-[180px]" />
@@ -145,14 +142,16 @@ function ContestList() {
           <p className="text-muted-foreground mt-2">Try changing your filters or check back later</p>
         </div>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {contests.map((contest) => (
-            <Card key={contest._id} className="overflow-hidden">
-              <CardContent className="p-0">
-                <div className="p-6 flex flex-col sm:flex-row justify-between gap-4">
+            <Card key={contest._id} className="overflow-hidden h-full">
+              <CardContent className="p-0 h-full">
+                <div className="p-6 flex flex-col justify-between h-full">
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-medium text-lg line-clamp-1">{contest.title || "Untitled Contest"}</h3>
+                    <div className="flex flex-wrap gap-2 items-center">
+                      <h3 className="font-medium text-lg line-clamp-1 mr-auto">
+                        {contest.title || "Untitled Contest"}
+                      </h3>
                       <Badge variant="outline" className={`${getPlatformColor(contest.platform)} text-white`}>
                         {contest.platform}
                       </Badge>
@@ -167,16 +166,16 @@ function ContestList() {
                       {formatDate(contest.start_time)}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                  <div className="flex flex-wrap items-center gap-2 mt-4">
                     {contest.past && contest.solution_link && (
-                      <Button variant="outline" size="sm" asChild>
+                      <Button variant="outline" size="sm" asChild className="flex-1">
                         <a href={contest.solution_link} target="_blank" rel="noopener noreferrer">
                           <Video className="mr-2 h-4 w-4" />
                           Solution
                         </a>
                       </Button>
                     )}
-                    <Button variant="outline" size="sm" asChild>
+                    <Button variant="outline" size="sm" asChild className="flex-1">
                       <a href={contest.url} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="mr-2 h-4 w-4" />
                         Visit
@@ -186,6 +185,7 @@ function ContestList() {
                       variant={contest.bookmarked ? "default" : "outline"}
                       size="sm"
                       onClick={() => handleToggleBookmark(contest._id)}
+                      className="flex-1"
                     >
                       <Bookmark className={`mr-2 h-4 w-4 ${contest.bookmarked ? "fill-current" : ""}`} />
                       {contest.bookmarked ? "Saved" : "Save"}

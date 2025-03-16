@@ -79,13 +79,20 @@ function ContestList() {
     })
   }
 
-  const formatDuration = (minutes) => {
-    if (!minutes) return ""
-    if (minutes < 60) return `${minutes} min`
+  const formatDuration = (duration) => {
+    if (!duration || isNaN(duration)) return "Unknown"
+    
+    // Ensure duration is in minutes
+    const minutes = Math.round(duration)
+  
+    if (minutes < 60) return `${minutes}h`
+    
     const hours = Math.floor(minutes / 60)
     const remainingMinutes = minutes % 60
-    return remainingMinutes ? `${hours}h ${remainingMinutes}m` : `${hours}h`
+  
+    return remainingMinutes === 0 ? `${hours}h` : `${hours}h ${remainingMinutes}m`
   }
+  
 
   return (
     <div className="space-y-6">

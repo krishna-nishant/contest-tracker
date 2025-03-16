@@ -17,78 +17,25 @@ function MainNav() {
             <span className="hidden font-bold sm:inline-block">Contest Tracker</span>
           </Link>
           <nav className="flex items-center space-x-6 text-sm font-medium">
-            <Link
-              to="/"
-              className={cn(
-                "transition-colors hover:text-foreground/80",
-                pathname === "/" ? "text-foreground" : "text-foreground/60",
-              )}
-            >
-              Home
-            </Link>
-            <Link
-              to="/bookmarks"
-              className={cn(
-                "transition-colors hover:text-foreground/80",
-                pathname === "/bookmarks" ? "text-foreground" : "text-foreground/60",
-              )}
-            >
-              Bookmarks
-            </Link>
-            <Link
-              to="/submit-solution"
-              className={cn(
-                "transition-colors hover:text-foreground/80",
-                pathname === "/submit-solution" ? "text-foreground" : "text-foreground/60",
-              )}
-            >
-              Submit Solution
-            </Link>
+            <Link to="/" className={cn("hover:text-foreground/80", pathname === "/" ? "text-foreground" : "text-foreground/60")}>Home</Link>
+            <Link to="/bookmarks" className={cn("hover:text-foreground/80", pathname === "/bookmarks" ? "text-foreground" : "text-foreground/60")}>Bookmarks</Link>
+            <Link to="/submit-solution" className={cn("hover:text-foreground/80", pathname === "/submit-solution" ? "text-foreground" : "text-foreground/60")}>Submit Solution</Link>
           </nav>
         </div>
+
         <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+          {/* New Button to Today's Contests Page */}
           <div className="w-full flex-1 md:w-auto md:flex-none">
-            <Button variant="outline" size="sm" className="ml-auto hidden md:flex">
-              <Calendar className="mr-2 h-4 w-4" />
-              Today's Contests
-            </Button>
+            <Link to="/todays-contests">
+              <Button variant="outline" size="sm" className="ml-auto hidden md:flex">
+                <Calendar className="mr-2 h-4 w-4" />
+                Today's Contests
+              </Button>
+            </Link>
           </div>
 
           {/* Theme toggle button */}
           <ModeToggle />
-
-          <nav className="flex items-center md:hidden">
-            <Link
-              to="/"
-              className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-md",
-                pathname === "/" ? "bg-accent" : "bg-transparent",
-              )}
-            >
-              <Calendar className="h-5 w-5" />
-              <span className="sr-only">Home</span>
-            </Link>
-            <Link
-              to="/bookmarks"
-              className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-md",
-                pathname === "/bookmarks" ? "bg-accent" : "bg-transparent",
-              )}
-            >
-              <Bookmark className="h-5 w-5" />
-              <span className="sr-only">Bookmarks</span>
-            </Link>
-            <Link
-              to="/submit-solution"
-              className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-md",
-                pathname === "/submit-solution" ? "bg-accent" : "bg-transparent",
-              )}
-            >
-              <Video className="h-5 w-5" />
-              <span className="sr-only">Submit Solution</span>
-            </Link>
-          </nav>
         </div>
       </div>
     </header>
@@ -96,4 +43,3 @@ function MainNav() {
 }
 
 export default MainNav
-

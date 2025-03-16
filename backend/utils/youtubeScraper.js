@@ -264,7 +264,7 @@ const fetchNewVideos = async (playlistId) => {
     const response = await youtube.playlistItems.list({
       part: "snippet",
       playlistId,
-      maxResults: 50,
+      maxResults: 100,
     });
 
     console.log(`✅ Fetched ${response.data.items.length} videos from playlist`);
@@ -370,6 +370,5 @@ const checkForNewSolutions = async () => {
 
 // **Run the function immediately & every 6 hours**
 setInterval(checkForNewSolutions, 6 * 60 * 60 * 1000);
-checkForNewSolutions();
 
 module.exports = checkForNewSolutions;

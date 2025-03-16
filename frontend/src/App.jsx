@@ -4,6 +4,8 @@ import MainNav from "./components/MainNav"
 import Home from "./pages/Home"
 import Bookmarks from "./pages/Bookmarks"
 import SubmitSolution from "./pages/SubmitSolution"
+import TodaysContests from "./pages/TodaysContests"
+
 
 function App() {
   return (
@@ -16,6 +18,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/bookmarks" element={<Bookmarks />} />
               <Route path="/submit-solution" element={<SubmitSolution />} />
+              <Route path="/todays-contests" element={<TodaysContests />} />
             </Routes>
           </main>
           <footer className="border-t py-4">

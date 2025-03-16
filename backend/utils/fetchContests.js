@@ -6,7 +6,7 @@ const fetchContests = async () => {
     try {
         console.log("🔄 Fetching all contests...");
 
-        // Fetch data from all sources
+        // Fetch contests from all platforms
         const leetCodeContests = await fetchLeetCodeContests();
         const codeforcesContests = await fetchCodeforcesContests();
         const codeChefContests = await fetchCodeChefContests();

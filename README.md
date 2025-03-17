@@ -1,7 +1,7 @@
 ### 🏆 **Contest Tracker**  
 A **MERN-based web app** to track **upcoming and past coding contests** from **LeetCode, Codeforces, and CodeChef**.  
 
-![Contest Tracker Preview](https://drive.google.com/file/d/1-qM4tJJw2JdTx35BBxZwdH8eMOhLSF4y/view?usp=drive_link))
+[Contest Tracker Preview](https://drive.google.com/file/d/1-qM4tJJw2JdTx35BBxZwdH8eMOhLSF4y/view?usp=drive_link)
 
 ---
 

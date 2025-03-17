@@ -30,11 +30,30 @@ router.get("/", async (req, res) => {
         if (platform) filter.platform = platform;
         if (past !== undefined) filter.past = past === "true";
 
-        const contests = await Contest.find(filter).sort({ start_time: 1 });
+        const sortOrder = past === "true" ? -1 : 1; // 🔹 Descending for past, Ascending for upcoming
+
+        const contests = await Contest.find(filter).sort({ start_time: sortOrder });
         res.json(contests);
     } catch (error) {
         console.error("❌ Error fetching contests:", error.message);
         res.status(500).json({ error: "Failed to retrieve contests" });
+    }
+});
+
+router.get("/today", async (req, res) => {
+    try {
+        const now = new Date();
+        const todayStartUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0));
+        const todayEndUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59));
+
+        const todaysContests = await Contest.find({
+            start_time: { $gte: todayStartUTC, $lte: todayEndUTC }
+        }).sort({ start_time: 1 });
+
+        res.json(todaysContests);
+    } catch (error) {
+        console.error("❌ Error fetching today's contests:", error.message);
+        res.status(500).json({ error: "Failed to retrieve today's contests" });
     }
 });
 

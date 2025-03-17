@@ -1,5 +1,5 @@
 // API service for the contest tracker
-const API_BASE_URL = "http://localhost:5000/api"
+const API_BASE_URL = "https://contest-tracker-248k.onrender.com/api"
 
 // Fetch all contests with optional filters
 export const fetchContests = async (platform = "", past = "") => {

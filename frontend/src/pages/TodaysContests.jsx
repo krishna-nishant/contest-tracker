@@ -84,14 +84,14 @@ function TodaysContests() {
     if (!duration || isNaN(duration)) return "Unknown";
     const minutes = Math.round(duration);
 
-    if (minutes < 60) return `${minutes}m`;
+    if (minutes < 60) return `${minutes}hrs`;
 
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
 
     return remainingMinutes === 0
-      ? `${hours}h`
-      : `${hours}h ${remainingMinutes}m`;
+      ? `${hours}hrs`
+      : `${hours}hrs ${remainingMinutes}m`;
   };
 
   return (

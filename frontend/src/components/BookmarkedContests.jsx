@@ -75,10 +75,10 @@ function BookmarkedContests() {
 
   const formatDuration = (minutes) => {
     if (!minutes) return ""
-    if (minutes < 60) return `${minutes} min`
+    if (minutes < 60) return `${minutes} hrs`
     const hours = Math.floor(minutes / 60)
     const remainingMinutes = minutes % 60
-    return remainingMinutes ? `${hours}h ${remainingMinutes}m` : `${hours}h`
+    return remainingMinutes ? `${hours}hrs ${remainingMinutes}m` : `${hours}hrs`
   }
 
   return (

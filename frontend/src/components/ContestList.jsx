@@ -85,12 +85,12 @@ function ContestList() {
     // Ensure duration is in minutes
     const minutes = Math.round(duration)
   
-    if (minutes < 60) return `${minutes}h`
+    if (minutes < 60) return `${minutes}hrs`
     
     const hours = Math.floor(minutes / 60)
     const remainingMinutes = minutes % 60
   
-    return remainingMinutes === 0 ? `${hours}h` : `${hours}h ${remainingMinutes}m`
+    return remainingMinutes === 0 ? `${hours}hrs` : `${hours}hrs ${remainingMinutes}m`
   }
   
 

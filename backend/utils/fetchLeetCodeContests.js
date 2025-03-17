@@ -39,7 +39,7 @@ const fetchLeetCodeContests = async () => {
         const pastContests = contests
             .filter(contest => contest.past)
             .sort((a, b) => b.start_time - a.start_time) // Sort by newest first
-            .slice(0, 10); // Get the last 10 past contests
+            .slice(0, 20); // Get the last 10 past contests
 
         const upcomingContests = contests.filter(contest => !contest.past);
 

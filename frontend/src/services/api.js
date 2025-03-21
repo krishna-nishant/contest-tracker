@@ -1,6 +1,9 @@
 // API service for the contest tracker
 const API_BASE_URL = "https://contest-tracker-248k.onrender.com/api"
 
+// Export the API_BASE_URL for use in other components
+export { API_BASE_URL }
+
 // Fetch all contests with optional filters
 export const fetchContests = async (platform = "", past = "") => {
   try {
@@ -25,6 +28,39 @@ export const fetchContests = async (platform = "", past = "") => {
   } catch (error) {
     console.error("Error fetching contests:", error)
     throw error
+  }
+}
+
+// Fetch today's contests
+export const fetchTodaysContests = async () => {
+  try {
+    console.log(`Fetching today's contests...`);
+    
+    // Get all contests first for client-side filtering
+    const allContestsResponse = await fetch(`${API_BASE_URL}/contests`);
+    if (!allContestsResponse.ok) {
+      throw new Error(`API error: ${allContestsResponse.status}`);
+    }
+    
+    const allContests = await allContestsResponse.json();
+    console.log(`Successfully fetched ${allContests.length} total contests`);
+    
+    // Filter today's contests client-side to handle timezone issues
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const todaysContests = allContests.filter(contest => {
+      const contestDate = new Date(contest.start_time);
+      return contestDate >= today && contestDate < tomorrow;
+    });
+    
+    console.log(`Found ${todaysContests.length} contests for today through client-side filtering`);
+    return todaysContests;
+  } catch (error) {
+    console.error("Error fetching today's contests:", error);
+    throw error;
   }
 }
 

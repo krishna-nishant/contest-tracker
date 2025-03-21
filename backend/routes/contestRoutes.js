@@ -42,14 +42,48 @@ router.get("/", async (req, res) => {
 
 router.get("/today", async (req, res) => {
     try {
+        // Get current date in user's local timezone
         const now = new Date();
-        const todayStartUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0));
-        const todayEndUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59));
+        
+        // Create start and end times for the current day with a wider range
+        // to ensure we capture contests on the same day
+        const todayStart = new Date(now);
+        todayStart.setHours(0, 0, 0, 0);
+        
+        const todayEnd = new Date(now);
+        todayEnd.setHours(23, 59, 59, 999);
+        
+        console.log(`Looking for contests between ${todayStart.toISOString()} and ${todayEnd.toISOString()}`);
+        console.log(`Current server time: ${now.toISOString()}`);
 
         const todaysContests = await Contest.find({
-            start_time: { $gte: todayStartUTC, $lte: todayEndUTC }
+            start_time: { $gte: todayStart, $lte: todayEnd }
         }).sort({ start_time: 1 });
 
+        // Log each contest we found for debugging
+        console.log(`Found ${todaysContests.length} contests for today (${now.toDateString()})`);
+        if (todaysContests.length > 0) {
+            todaysContests.forEach(contest => {
+                console.log(`- ${contest.title} (${contest.platform}) at ${new Date(contest.start_time).toISOString()}`);
+            });
+        }
+        
+        // If we didn't find any contests today, try finding contests in a wider range
+        if (todaysContests.length === 0) {
+            // Get all contests
+            const allContests = await Contest.find({});
+            console.log(`Total contests in database: ${allContests.length}`);
+            
+            // Find the closest upcoming contest
+            const upcoming = await Contest.find({
+                start_time: { $gte: now }
+            }).sort({ start_time: 1 }).limit(1);
+            
+            if (upcoming.length > 0) {
+                console.log(`Next upcoming contest: ${upcoming[0].title} on ${new Date(upcoming[0].start_time).toISOString()}`);
+            }
+        }
+        
         res.json(todaysContests);
     } catch (error) {
         console.error("❌ Error fetching today's contests:", error.message);

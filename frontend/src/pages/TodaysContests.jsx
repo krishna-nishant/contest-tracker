@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { Link } from "react-router-dom";
 import { Calendar, Clock, ExternalLink, Bookmark } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,31 +6,47 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { toggleBookmark } from "../services/api";
+import { toggleBookmark, fetchTodaysContests, fetchContests } from "../services/api";
 
 function TodaysContests() {
   const [contests, setContests] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchTodaysContests = async () => {
+    const loadTodaysContests = async () => {
       try {
         console.log("Fetching today's contests...");
-        const response = await axios.get(
-          "http://localhost:5000/api/contests/today"
-        );
-
-        setContests(response.data);
+        const data = await fetchTodaysContests();
+        console.log("Today's contests response:", data);
+        
+        if (data && Array.isArray(data)) {
+          setContests(data);
+        } else {
+          console.log("Invalid response format, falling back to all contests");
+          const allContests = await fetchContests();
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const tomorrow = new Date(today);
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          
+          const todaysContests = allContests.filter(contest => {
+            const contestDate = new Date(contest.start_time);
+            return contestDate >= today && contestDate < tomorrow;
+          });
+          
+          setContests(todaysContests);
+        }
       } catch (error) {
         console.error("❌ Error fetching today's contests:", error);
         toast.error("Failed to load today's contests", {
           description: "Please try again later",
         });
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
-    fetchTodaysContests();
+    loadTodaysContests();
   }, []);
 
   const handleToggleBookmark = async (id) => {
@@ -84,7 +99,7 @@ function TodaysContests() {
     if (!duration || isNaN(duration)) return "Unknown";
     const minutes = Math.round(duration);
 
-    if (minutes < 60) return `${minutes}hrs`;
+    if (minutes < 60) return `${minutes}min`;
 
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;

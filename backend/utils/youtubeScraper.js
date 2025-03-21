@@ -1,245 +1,3 @@
-// "use client"
-
-// const { google } = require("googleapis")
-// const Contest = require("../models/Contest")
-// const stringSimilarity = require("string-similarity")
-// require("dotenv").config()
-
-// const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY
-// const youtube = google.youtube({ version: "v3", auth: YOUTUBE_API_KEY })
-
-// // Playlists for each platform
-// const PLAYLISTS = {
-//   LeetCode: "PLcXpkI9A-RZI6FhydNz3JBt_-p_i25Cbr",
-//   Codeforces: "PLcXpkI9A-RZLUfBSNp-YQBCOezZKbDSgB",
-//   CodeChef: "PLcXpkI9A-RZIZ6lsE0KCcLWeKNoG45fYr",
-// }
-
-// // Different thresholds for different platforms
-// const THRESHOLDS = {
-//   LeetCode: 0.5,
-//   Codeforces: 0.5,
-//   CodeChef: 0.4,
-// }
-
-// // Basic function to clean and standardize titles for comparison
-// const cleanTitle = (title) => {
-//   return title
-//     .toLowerCase()
-//     .replace(/[^a-z0-9\s]/g, "") // Remove special characters
-//     .replace(/\s+/g, " ") // Replace multiple spaces with a single space
-//     .trim()
-// }
-
-// // LeetCode-specific matching algorithm
-// const matchLeetCodeContest = (videoTitle, contestTitle) => {
-//   // Convert titles to lowercase for case-insensitive matching
-//   const videoLower = videoTitle.toLowerCase()
-//   const contestLower = contestTitle.toLowerCase()
-
-//   // Extract contest type and number
-//   const videoMatch = videoLower.match(/\b(weekly|biweekly)\s+contest\s+(\d+)\b/i)
-//   const contestMatch = contestLower.match(/\b(weekly|biweekly)\s+contest\s+(\d+)\b/i)
-
-//   // If both have contest numbers
-//   if (videoMatch && contestMatch) {
-//     const videoType = videoMatch[1] // weekly or biweekly
-//     const videoNumber = videoMatch[2] // contest number
-
-//     const contestType = contestMatch[1]
-//     const contestNumber = contestMatch[2]
-
-//     // Both type and number must match exactly
-//     if (videoType === contestType && videoNumber === contestNumber) {
-//       return 0.9 // Very high match - exact contest
-//     } else {
-//       return 0.1 // Very low match - different contests
-//     }
-//   }
-
-//   // Fall back to standard similarity
-//   return stringSimilarity.compareTwoStrings(cleanTitle(videoTitle), cleanTitle(contestTitle))
-// }
-
-// // Codeforces-specific matching algorithm
-// const matchCodeforcesContest = (videoTitle, contestTitle) => {
-//   // Convert titles to lowercase for case-insensitive matching
-//   const videoLower = videoTitle.toLowerCase()
-//   const contestLower = contestTitle.toLowerCase()
-
-//   // Extract round number and division
-//   const videoMatch = videoLower.match(
-//     /\bcodeforces\s+(?:round|educational)\s+(\d+)(?:\s*\(?\s*(?:div\.\s*(\d+)|rated|unrated))?/i,
-//   )
-//   const contestMatch = contestLower.match(
-//     /\bcodeforces\s+(?:round|educational)\s+(\d+)(?:\s*\(?\s*(?:div\.\s*(\d+)|rated|unrated))?/i,
-//   )
-
-//   // If both have round numbers
-//   if (videoMatch && contestMatch) {
-//     const videoRound = videoMatch[1] // round number
-//     const videoDiv = videoMatch[2] || "" // division (may be undefined)
-
-//     const contestRound = contestMatch[1]
-//     const contestDiv = contestMatch[2] || "" // division (may be undefined)
-
-//     // Round number must match exactly
-//     if (videoRound === contestRound) {
-//       // If division also matches or at least one doesn't specify division
-//       if (videoDiv === contestDiv || !videoDiv || !contestDiv) {
-//         return 0.9 // Very high match
-//       } else {
-//         return 0.4 // Medium match - same round but different division
-//       }
-//     } else {
-//       return 0.1 // Very low match - different rounds
-//     }
-//   }
-
-//   // Fall back to standard similarity
-//   return stringSimilarity.compareTwoStrings(cleanTitle(videoTitle), cleanTitle(contestTitle))
-// }
-
-// // CodeChef-specific matching algorithm
-// const matchCodeChefContest = (videoTitle, contestTitle) => {
-//   // For now, use the standard similarity
-//   return stringSimilarity.compareTwoStrings(cleanTitle(videoTitle), cleanTitle(contestTitle))
-// }
-
-// // Fetch new videos with improved error handling
-// const fetchNewVideos = async (playlistId) => {
-//   try {
-//     console.log(`🔍 Attempting to fetch videos from playlist: ${playlistId}`)
-
-//     const response = await youtube.playlistItems.list({
-//       part: "snippet",
-//       playlistId,
-//       maxResults: 50, // Fetch latest 50 videos
-//     })
-
-//     console.log(`✅ Successfully fetched ${response.data.items.length} videos from playlist`)
-
-//     return response.data.items.map((video) => ({
-//       title: video.snippet.title,
-//       link: `https://www.youtube.com/watch?v=${video.snippet.resourceId.videoId}`,
-//       publishedAt: new Date(video.snippet.publishedAt).getTime(),
-//     }))
-//   } catch (error) {
-//     console.error(`❌ Error fetching videos from playlist ${playlistId}:`, error.response?.data?.error || error.message)
-//     return []
-//   }
-// }
-
-// // Function to update contests to past status if they've already happened
-// const updatePastContests = async () => {
-//   try {
-//     const now = new Date()
-//     const updatedContests = await Contest.updateMany(
-//       {
-//         start_time: { $lt: now },
-//         past: { $ne: true },
-//       },
-//       { $set: { past: true } },
-//     )
-
-//     if (updatedContests.modifiedCount > 0) {
-//       console.log(`🔄 Updated ${updatedContests.modifiedCount} contests to past status`)
-//     }
-//   } catch (err) {
-//     console.error("❌ Error updating past contests past contests:", err)
-//   }
-// }
-
-// // Enhanced matching algorithm for contest solutions - now checks ALL past contests
-// const checkForNewSolutions = async () => {
-//   console.log("🔍 Checking for new YouTube solutions...")
-
-//   // First update past contests status
-//   await updatePastContests()
-
-//   // Find ALL past contests - even those with existing solutions
-//   const pastContests = await Contest.find({ past: true })
-//   console.log(`Found ${pastContests.length} total past contests to check`)
-
-//   for (const contest of pastContests) {
-//     const playlistId = PLAYLISTS[contest.platform]
-//     if (!playlistId) {
-//       console.log(`⚠️ No playlist configured for platform: ${contest.platform}`)
-//       continue
-//     }
-
-//     const videos = await fetchNewVideos(playlistId)
-//     if (videos.length === 0) {
-//       console.log(`⚠️ No videos found for platform: ${contest.platform}`)
-//       continue
-//     }
-
-//     let bestMatch = { score: 0, link: null, videoTitle: null }
-
-//     for (const video of videos) {
-//       // Use platform-specific matching algorithms
-//       let similarity
-
-//       if (contest.platform === "LeetCode") {
-//         similarity = matchLeetCodeContest(video.title, contest.title)
-//       } else if (contest.platform === "Codeforces") {
-//         similarity = matchCodeforcesContest(video.title, contest.title)
-//       } else if (contest.platform === "CodeChef") {
-//         similarity = matchCodeChefContest(video.title, contest.title)
-//       } else {
-//         // Fallback to general string similarity
-//         similarity = stringSimilarity.compareTwoStrings(cleanTitle(video.title), cleanTitle(contest.title))
-//       }
-
-//       console.log(`🔍 [${contest.platform}] Comparing: "${video.title}" with "${contest.title}" (Score: ${similarity})`)
-
-//       if (similarity > bestMatch.score) {
-//         bestMatch = { score: similarity, link: video.link, videoTitle: video.title }
-//       }
-//     }
-
-//     // Use platform-specific thresholds
-//     const threshold = THRESHOLDS[contest.platform] || 0.4
-
-//     if (bestMatch.score > threshold) {
-//       // Check if this is different from the existing solution
-//       if (!contest.solution_link || contest.solution_link !== bestMatch.link) {
-//         await Contest.findByIdAndUpdate(contest._id, { solution_link: bestMatch.link })
-
-//         if (contest.solution_link) {
-//           console.log(`🔄 Updated Solution for ${contest.title}`)
-//           console.log(`   Old Link: ${contest.solution_link}`)
-//           console.log(`   New Link: ${bestMatch.link}`)
-//         } else {
-//           console.log(`✅ New Solution Added for ${contest.title}: ${bestMatch.link}`)
-//         }
-
-//         console.log(`   Video Title: ${bestMatch.videoTitle}`)
-//         console.log(`   Match Score: ${bestMatch.score}`)
-//       } else {
-//         console.log(`✓ Existing solution for "${contest.title}" is still the best match`)
-//       }
-//     } else {
-//       console.log(
-//         `❌ No good match found for "${contest.title}" (Best score: ${bestMatch.score}, threshold: ${threshold})`,
-//       )
-//     }
-//   }
-
-//   console.log("✅ Finished checking for YouTube solutions")
-// }
-
-// // Run every 6 hours
-// const scheduleInterval = 6 * 60 * 60 * 1000
-// setInterval(checkForNewSolutions, scheduleInterval)
-
-// // Run immediately on startup
-// checkForNewSolutions();
-
-// module.exports = checkForNewSolutions
-
-
-
 "use client";
 
 const { google } = require("googleapis");
@@ -289,45 +47,113 @@ const cleanTitle = (title) => {
     .trim();
 };
 
-// ✅ **Find a Matching Video**
+// ✅ **Find a Matching Video with Enhanced Precision**
 const findMatchingVideo = (videos, contestTitle, platform) => {
   const cleanedContestTitle = cleanTitle(contestTitle);
-
-  for (const video of videos) {
-    const cleanedVideoTitle = cleanTitle(video.title);
-
-    if (platform === "LeetCode") {
-      const match = cleanedVideoTitle.match(/weekly contest (\d+)|biweekly contest (\d+)/);
-      const contestMatch = cleanedContestTitle.match(/weekly contest (\d+)|biweekly contest (\d+)/);
+  console.log(`🔍 Looking for match for ${platform} contest: "${contestTitle}"`);
+  
+  // Sort videos by published date (newest first) to prefer recent solutions
+  const sortedVideos = [...videos].sort((a, b) => b.publishedAt - a.publishedAt);
+  
+  // Platform-specific matchers
+  if (platform === "LeetCode") {
+    // Extract exact contest type and number from contest title
+    const contestMatch = cleanedContestTitle.match(/\b(weekly|biweekly)\s+contest\s+(\d+)\b/i);
+    if (!contestMatch) {
+      console.log(`⚠️ Could not extract contest number from LeetCode title: "${contestTitle}"`);
+      return null;
+    }
+    
+    const contestType = contestMatch[1].toLowerCase(); // "weekly" or "biweekly"
+    const contestNumber = contestMatch[2]; // The contest number
+    
+    console.log(`🔎 Looking for ${contestType} contest ${contestNumber}`);
+    
+    // Find exact match for contest type and number
+    for (const video of sortedVideos) {
+      const cleanedVideoTitle = cleanTitle(video.title);
+      // Look for exact contest type and number
+      const videoMatch = cleanedVideoTitle.match(
+        new RegExp(`\\b(${contestType})\\s+contest\\s+(${contestNumber})\\b`, 'i')
+      );
       
-      if (match && contestMatch) {
-        if (match[1] === contestMatch[1] || match[2] === contestMatch[2]) {
-          return video;
-        }
-      }
-    }
-
-    if (platform === "Codeforces") {
-      const match = cleanedVideoTitle.match(/codeforces round (\d+)(?: div (\d+))?/);
-      const contestMatch = cleanedContestTitle.match(/codeforces round (\d+)(?: div (\d+))?/);
-
-      if (match && contestMatch) {
-        if (match[1] === contestMatch[1] && (!match[2] || match[2] === contestMatch[2])) {
-          return video;
-        }
-      }
-    }
-
-    if (platform === "CodeChef") {
-      const match = cleanedVideoTitle.match(/starters (\d+)/);
-      const contestMatch = cleanedContestTitle.match(/starters (\d+)/);
-
-      if (match && contestMatch && match[1] === contestMatch[1]) {
+      if (videoMatch) {
+        console.log(`✅ Exact match found: "${video.title}"`);
         return video;
       }
     }
+    
+    console.log(`❌ No exact match found for ${contestType} contest ${contestNumber}`);
+  } 
+  else if (platform === "Codeforces") {
+    // For Codeforces, extract round number and division
+    const contestMatch = cleanedContestTitle.match(/\bcodeforces\s+(?:round|educational)\s+(\d+)(?:\s*(?:div\.?\s*(\d+)|rated|unrated))?\b/i);
+    
+    if (!contestMatch) {
+      console.log(`⚠️ Could not extract round number from Codeforces title: "${contestTitle}"`);
+      return null;
+    }
+    
+    const roundNumber = contestMatch[1]; // Round number
+    const division = contestMatch[2] || ""; // Division (might be undefined)
+    
+    const isEducational = cleanedContestTitle.includes("educational");
+    
+    console.log(`🔎 Looking for Codeforces ${isEducational ? "Educational " : ""}Round ${roundNumber}${division ? ` Div ${division}` : ""}`);
+    
+    for (const video of sortedVideos) {
+      const cleanedVideoTitle = cleanTitle(video.title);
+      
+      // Check if educational status matches
+      const videoIsEducational = cleanedVideoTitle.includes("educational");
+      if (isEducational !== videoIsEducational) continue;
+      
+      // Look for round number
+      const videoMatch = cleanedVideoTitle.match(/\bcodeforces\s+(?:round|educational)\s+(\d+)(?:\s*(?:div\.?\s*(\d+)|rated|unrated))?\b/i);
+      
+      if (videoMatch && videoMatch[1] === roundNumber) {
+        // If division is specified in the contest, it must match exactly in the video
+        if (!division || !videoMatch[2] || videoMatch[2] === division) {
+          console.log(`✅ Match found: "${video.title}"`);
+          return video;
+        }
+      }
+    }
+    
+    console.log(`❌ No exact match found for Codeforces Round ${roundNumber}${division ? ` Div ${division}` : ""}`);
+  } 
+  else if (platform === "CodeChef") {
+    // For CodeChef, extract contest type and number
+    let contestMatch = cleanedContestTitle.match(/\b(starters|cookoff|lunchtime|long challenge)\s+(\d+)\b/i);
+    
+    if (!contestMatch) {
+      console.log(`⚠️ Could not extract contest details from CodeChef title: "${contestTitle}"`);
+      return null;
+    }
+    
+    const contestType = contestMatch[1].toLowerCase(); // "starters", "cookoff", etc.
+    const contestNumber = contestMatch[2]; // Contest number
+    
+    console.log(`🔎 Looking for CodeChef ${contestType} ${contestNumber}`);
+    
+    for (const video of sortedVideos) {
+      const cleanedVideoTitle = cleanTitle(video.title);
+      
+      // Look for exact match with contest type and number
+      const videoMatch = cleanedVideoTitle.match(
+        new RegExp(`\\b${contestType}\\s+${contestNumber}\\b`, 'i')
+      );
+      
+      if (videoMatch) {
+        console.log(`✅ Match found: "${video.title}"`);
+        return video;
+      }
+    }
+    
+    console.log(`❌ No exact match found for CodeChef ${contestType} ${contestNumber}`);
   }
-
+  
+  // If no match found with strict matching, return null
   return null;
 };
 
@@ -335,11 +161,43 @@ const findMatchingVideo = (videos, contestTitle, platform) => {
 const checkForNewSolutions = async () => {
   console.log("🔍 Checking for new YouTube solutions...");
 
-  // **Find past contests without solutions**
-  const pastContests = await Contest.find({ past: true, solution_link: { $exists: false } });
-  console.log(`📌 Checking ${pastContests.length} past contests for solutions`);
+  // First, update contests to past status if they're already over
+  const now = new Date();
+  try {
+    const updateResult = await Contest.updateMany(
+      { start_time: { $lt: now }, past: { $ne: true } }, 
+      { $set: { past: true } }
+    );
+    
+    if (updateResult.modifiedCount > 0) {
+      console.log(`🔄 Updated ${updateResult.modifiedCount} contests to past status`);
+    }
+  } catch (err) {
+    console.error("❌ Error updating contests to past status:", err);
+  }
 
-  for (const contest of pastContests) {
+  // Only check past contests WITHOUT existing solution links
+  const pastContestsWithoutSolutions = await Contest.find({ 
+    past: true,
+    $or: [
+      { solution_link: { $exists: false } },
+      { solution_link: null },
+      { solution_link: "" }
+    ]
+  });
+  
+  console.log(`📌 Checking ${pastContestsWithoutSolutions.length} past contests without solutions`);
+
+  // If no contests need solutions, exit early
+  if (pastContestsWithoutSolutions.length === 0) {
+    console.log("✓ No contests need solutions - skipping YouTube API calls");
+    return;
+  }
+
+  // Process contests in reverse chronological order (newest first)
+  pastContestsWithoutSolutions.sort((a, b) => b.start_time - a.start_time);
+  
+  for (const contest of pastContestsWithoutSolutions) {
     const playlistId = PLAYLISTS[contest.platform];
 
     if (!playlistId) {
@@ -359,7 +217,7 @@ const checkForNewSolutions = async () => {
 
     if (bestMatch) {
       await Contest.findByIdAndUpdate(contest._id, { solution_link: bestMatch.link });
-      console.log(`✅ Solution added for ${contest.title}: ${bestMatch.link}`);
+      console.log(`✅ Added new solution for ${contest.title}: ${bestMatch.link}`);
     } else {
       console.log(`❌ No matching video found for ${contest.title}`);
     }

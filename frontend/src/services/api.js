@@ -24,7 +24,14 @@ export const fetchContests = async (platform = "", past = "") => {
       throw new Error(`API error: ${response.status}`)
     }
 
-    return await response.json()
+    const contests = await response.json()
+
+    // Apply local bookmarks to contests from API
+    const bookmarkedIds = getBookmarkedIds()
+    return contests.map(contest => ({
+      ...contest,
+      bookmarked: bookmarkedIds.includes(contest._id)
+    }))
   } catch (error) {
     console.error("Error fetching contests:", error)
     throw error
@@ -35,48 +42,67 @@ export const fetchContests = async (platform = "", past = "") => {
 export const fetchTodaysContests = async () => {
   try {
     console.log(`Fetching today's contests...`);
-    
+
     // Get all contests first for client-side filtering
     const allContestsResponse = await fetch(`${API_BASE_URL}/contests`);
     if (!allContestsResponse.ok) {
       throw new Error(`API error: ${allContestsResponse.status}`);
     }
-    
+
     const allContests = await allContestsResponse.json();
     console.log(`Successfully fetched ${allContests.length} total contests`);
-    
+
     // Filter today's contests client-side to handle timezone issues
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
-    
+
     const todaysContests = allContests.filter(contest => {
       const contestDate = new Date(contest.start_time);
       return contestDate >= today && contestDate < tomorrow;
     });
-    
+
+    // Apply local bookmarks to contests
+    const bookmarkedIds = getBookmarkedIds()
+    const contestsWithBookmarks = todaysContests.map(contest => ({
+      ...contest,
+      bookmarked: bookmarkedIds.includes(contest._id)
+    }))
+
     console.log(`Found ${todaysContests.length} contests for today through client-side filtering`);
-    return todaysContests;
+    return contestsWithBookmarks;
   } catch (error) {
     console.error("Error fetching today's contests:", error);
     throw error;
   }
 }
 
+// Helper functions for localStorage bookmarks
+const getBookmarkedIds = () => {
+  const bookmarksJson = localStorage.getItem('bookmarkedContests') || '[]'
+  return JSON.parse(bookmarksJson)
+}
+
+const saveBookmarkedIds = (bookmarkedIds) => {
+  localStorage.setItem('bookmarkedContests', JSON.stringify(bookmarkedIds))
+}
+
 // Fetch only bookmarked contests
 export const fetchBookmarkedContests = async () => {
   try {
-    // Since there's no specific endpoint for bookmarked contests in your API,
-    // we'll fetch all contests and filter on the client side
+    // Get all contests from API
     const response = await fetch(`${API_BASE_URL}/contests`)
 
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`)
     }
 
-    const data = await response.json()
-    return data.filter((contest) => contest.bookmarked)
+    const allContests = await response.json()
+
+    // Filter by bookmarked IDs from localStorage
+    const bookmarkedIds = getBookmarkedIds()
+    return allContests.filter(contest => bookmarkedIds.includes(contest._id))
   } catch (error) {
     console.error("Error fetching bookmarked contests:", error)
     throw error
@@ -92,39 +118,51 @@ export const fetchPastContests = async () => {
       throw new Error(`API error: ${response.status}`)
     }
 
-    return await response.json()
+    const contests = await response.json()
+
+    // Apply local bookmarks to past contests
+    const bookmarkedIds = getBookmarkedIds()
+    return contests.map(contest => ({
+      ...contest,
+      bookmarked: bookmarkedIds.includes(contest._id)
+    }))
   } catch (error) {
     console.error("Error fetching past contests:", error)
     throw error
   }
 }
 
-// Toggle bookmark status for a contest - FIXED
+// Toggle bookmark status for a contest using localStorage
 export const toggleBookmark = async (contestId) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/contests/bookmark/${contestId}`, {
-      method: "POST", // Changed from PUT to POST to match your backend
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
+    const bookmarkedIds = getBookmarkedIds()
 
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`)
+    let newBookmarkedIds
+    if (bookmarkedIds.includes(contestId)) {
+      // Remove bookmark
+      newBookmarkedIds = bookmarkedIds.filter(id => id !== contestId)
+    } else {
+      // Add bookmark
+      newBookmarkedIds = [...bookmarkedIds, contestId]
     }
 
-    return await response.json()
+    saveBookmarkedIds(newBookmarkedIds)
+
+    return {
+      message: "Bookmark updated",
+      bookmarked: newBookmarkedIds.includes(contestId)
+    }
   } catch (error) {
     console.error("Error toggling bookmark:", error)
     throw error
   }
 }
 
-// Add solution link to a contest - FIXED
+// Add solution link to a contest - Keep this server-side since it's not user-specific
 export const addSolutionLink = async (contestId, solutionLink) => {
   try {
     const response = await fetch(`${API_BASE_URL}/contests/solution/${contestId}`, {
-      method: "POST", // Changed from PUT to POST to match your backend
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
       },

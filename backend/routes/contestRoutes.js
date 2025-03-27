@@ -91,21 +91,6 @@ router.get("/today", async (req, res) => {
     }
 });
 
-// ✅ Toggle Bookmark
-router.post("/bookmark/:id", async (req, res) => {
-    try {
-        const contest = await Contest.findById(req.params.id);
-        if (!contest) return res.status(404).json({ error: "Contest not found" });
-
-        contest.bookmarked = !contest.bookmarked;
-        await contest.save();
-        res.json({ message: "Bookmark updated", bookmarked: contest.bookmarked });
-    } catch (error) {
-        console.error("❌ Error bookmarking contest:", error.message);
-        res.status(500).json({ error: "Failed to bookmark contest" });
-    }
-});
-
 // ✅ Add Solution Link
 router.post("/solution/:id", async (req, res) => {
     try {

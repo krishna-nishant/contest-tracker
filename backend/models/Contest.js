@@ -7,7 +7,6 @@ const contestSchema = new mongoose.Schema({
     duration: { type: Number, required: true },
     url: { type: String, required: true },
     past: { type: Boolean, default: false },
-    bookmarked: { type: Boolean, default: false },
     solution_link: { type: String }
 });
 

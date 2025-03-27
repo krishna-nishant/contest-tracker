@@ -43,7 +43,7 @@ function MainNav() {
           >
             Bookmarks
           </Link>
-          <Link
+          {/* <Link
             to="/submit-solution"
             className={cn(
               "hover:text-foreground/80",
@@ -53,7 +53,7 @@ function MainNav() {
             )}
           >
             Submit Solution
-          </Link>
+          </Link> */}
         </div>
 
         <div className="flex items-center gap-2">
@@ -114,7 +114,7 @@ function MainNav() {
                   >
                     Bookmarks
                   </Link>
-                  <Link
+                  {/* <Link
                     to="/submit-solution"
                     className={cn(
                       "flex items-center text-lg font-medium transition-colors hover:text-foreground/80",
@@ -122,7 +122,7 @@ function MainNav() {
                     )}
                   >
                     Submit Solution
-                  </Link>
+                  </Link> */}
                   <Link
                     to="/todays-contests"
                     className={cn(

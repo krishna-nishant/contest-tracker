@@ -19,13 +19,12 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '18'
+          node-version: "18"
 
       - name: Install dependencies
         run: |
           cd backend
           npm install
-
 
       - name: Run tests
         run: echo "Skipping tests since none are defined"
@@ -35,7 +34,6 @@ jobs:
           cd backend  # Change to the backend directory
           docker build -t contest-tracker-backend .
           docker tag contest-tracker-backend:latest ${{ secrets.DOCKER_HUB_USERNAME }}/contest-tracker-backend:latest
-
 
       - name: Push Docker image to Docker Hub
         run: |
@@ -52,4 +50,4 @@ jobs:
           curl -X POST "https://api.render.com/deploy" \
           -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
           -H "Content-Type: application/json" \
-          --data '{"serviceId":"your_render_service_id"}'
+          --data '{"serviceId":"srv-cvbitmlds78s73albfc0"}'

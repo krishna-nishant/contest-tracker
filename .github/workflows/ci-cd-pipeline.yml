@@ -22,7 +22,10 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          cd backend
+          npm install
+
 
       - name: Run tests
         run: echo "Skipping tests since none are defined"

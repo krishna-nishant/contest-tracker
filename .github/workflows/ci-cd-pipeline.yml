@@ -32,8 +32,10 @@ jobs:
 
       - name: Build Docker image
         run: |
+          cd backend  # Change to the backend directory
           docker build -t contest-tracker-backend .
           docker tag contest-tracker-backend:latest ${{ secrets.DOCKER_HUB_USERNAME }}/contest-tracker-backend:latest
+
 
       - name: Push Docker image to Docker Hub
         run: |

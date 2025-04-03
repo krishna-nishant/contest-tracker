@@ -2,6 +2,8 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const cron = require('node-cron');
+const axios = require('axios');
 const contestRoutes = require("./routes/contestRoutes");
 const fetchSolutions = require("./utils/youtubeScraper");
 const fetchContests = require("./utils/fetchContests");
@@ -30,49 +32,36 @@ const fetchAndStoreContests = async () => {
 };
 
 /**
- * Schedule data fetching at 10 PM daily
+ * Daily job to fetch contests and solutions
  */
-const setupDailyFetchSchedule = () => {
-  // Calculate time until 10 PM today or tomorrow
-  const calculateTimeUntil10PM = () => {
-    const now = new Date();
-    const target = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      22, 0, 0 // 10 PM
-    );
+const setupCronJobs = () => {
+  // Schedule a job to run at 10 PM (22:00) every day
+  // Cron format: minute hour day-of-month month day-of-week
+  console.log('📅 Setting up daily cron job to run at 10 PM');
 
-    // If it's already past 10 PM, schedule for tomorrow
-    if (now >= target) {
-      target.setDate(target.getDate() + 1);
-    }
-
-    return target.getTime() - now.getTime();
-  };
-
-  // Run the daily fetch job
-  const runDailyFetchJob = () => {
-    console.log("⏰ Running scheduled 10 PM data fetch");
+  cron.schedule('0 22 * * *', () => {
+    console.log("⏰ Running scheduled 10 PM data fetch via cron");
     fetchAndStoreContests();
     fetchSolutions();
-  };
+  });
 
-  // Set up the initial timer
-  const msUntil10PM = calculateTimeUntil10PM();
-  const minutesUntil10PM = Math.round(msUntil10PM / 1000 / 60);
+  // Add another job to run every 6 hours to ensure data is fresh
+  cron.schedule('0 */6 * * *', () => {
+    console.log("🔄 Running 6-hourly data refresh via cron");
+    fetchAndStoreContests();
+  });
 
-  console.log(`📅 Scheduling next contest fetch in ${minutesUntil10PM} minutes (at 10 PM)`);
-
-  // Schedule first run
-  const initialTimer = setTimeout(() => {
-    runDailyFetchJob();
-
-    // Then set up a 24-hour interval
-    setInterval(runDailyFetchJob, 24 * 60 * 60 * 1000);
-  }, msUntil10PM);
-
-  return initialTimer;
+  // Anti-sleep job: ping the server every 14 minutes to prevent Render from putting it to sleep
+  cron.schedule('*/1 * * * *', async () => {
+    try {
+      const serverUrl = process.env.SERVER_URL || `http://localhost:${process.env.PORT || 5000}`;
+      console.log(`🔔 Pinging health endpoint to prevent sleep: ${serverUrl}/api/health`);
+      const response = await axios.get(`${serverUrl}/api/health`);
+      console.log(`✅ Health check response: ${response.status}`);
+    } catch (error) {
+      console.error('❌ Failed to ping health endpoint:', error.message);
+    }
+  });
 };
 
 /**
@@ -99,12 +88,6 @@ const initialDataFetch = async () => {
  * Configure and start the server
  */
 const startServer = () => {
-  // Set up the daily fetch schedule
-  setupDailyFetchSchedule();
-
-  // Check for initial data
-  initialDataFetch();
-
   // Set up middleware
   app.use(express.json());
 
@@ -118,7 +101,15 @@ const startServer = () => {
 
   // Start listening
   const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+
+    // Set up cron jobs after server starts to ensure the health endpoint is available
+    setupCronJobs();
+
+    // Check for initial data
+    initialDataFetch();
+  });
 };
 
 // Start the server

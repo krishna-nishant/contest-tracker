@@ -52,7 +52,7 @@ const setupCronJobs = () => {
   });
 
   // Anti-sleep job: ping the server every 14 minutes to prevent Render from putting it to sleep
-  cron.schedule('*/1 * * * *', async () => {
+  cron.schedule('*/14 * * * *', async () => {
     try {
       const serverUrl = process.env.SERVER_URL || `http://localhost:${process.env.PORT || 5000}`;
       console.log(`🔔 Pinging health endpoint to prevent sleep: ${serverUrl}/api/health`);

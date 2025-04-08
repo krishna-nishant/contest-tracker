@@ -1,0 +1,409 @@
+{
+  "info": {
+    "_postman_id": "6a3c1f6c-7a9a-4d75-a8bc-1a05a2dcf0f8",
+    "name": "Contest Tracker API",
+    "description": "API collection for testing the Contest Tracker backend endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "health"]
+        },
+        "description": "Check if the API is up and running"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has correct structure\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('status', 'ok');",
+              "    pm.expect(jsonData).to.have.property('message', 'Server is running');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Get All Contests",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/contests",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "contests"]
+        },
+        "description": "Get all contests from the database"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response is an array\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(Array.isArray(jsonData)).to.be.true;",
+              "});",
+              "",
+              "pm.test(\"Contests have required fields\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    ",
+              "    if (jsonData.length > 0) {",
+              "        var contest = jsonData[0];",
+              "        pm.expect(contest).to.have.property('_id');",
+              "        pm.expect(contest).to.have.property('title');",
+              "        pm.expect(contest).to.have.property('platform');",
+              "        pm.expect(contest).to.have.property('url');",
+              "        pm.expect(contest).to.have.property('duration');",
+              "        ",
+              "        // Save first contest ID for later use",
+              "        pm.environment.set('contestId', contest._id);",
+              "    }",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Get Contests by Platform",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/contests?platform=Codeforces",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "contests"],
+          "query": [
+            {
+              "key": "platform",
+              "value": "Codeforces"
+            }
+          ]
+        },
+        "description": "Filter contests by platform (Codeforces, LeetCode, CodeChef)"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"All contests are from Codeforces\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    ",
+              "    if (jsonData.length > 0) {",
+              "        jsonData.forEach(function(contest) {",
+              "            pm.expect(contest.platform).to.equal('Codeforces');",
+              "        });",
+              "    }",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Get Past Contests",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/contests?past=true",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "contests"],
+          "query": [
+            {
+              "key": "past",
+              "value": "true"
+            }
+          ]
+        },
+        "description": "Get past contests"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"All contests are past contests\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    ",
+              "    if (jsonData.length > 0) {",
+              "        jsonData.forEach(function(contest) {",
+              "            pm.expect(contest.past).to.be.true;",
+              "        });",
+              "    }",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Get Upcoming Contests",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/contests?past=false",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "contests"],
+          "query": [
+            {
+              "key": "past",
+              "value": "false"
+            }
+          ]
+        },
+        "description": "Get upcoming contests"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"All contests are upcoming contests\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    ",
+              "    if (jsonData.length > 0) {",
+              "        jsonData.forEach(function(contest) {",
+              "            pm.expect(contest.past).to.be.false;",
+              "        });",
+              "    }",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Get Today's Contests",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/contests/today",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "contests", "today"]
+        },
+        "description": "Get contests scheduled for today"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response is an array\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(Array.isArray(jsonData)).to.be.true;",
+              "});",
+              "",
+              "// Note: We can't test if contests are actually for today since that depends on the data",
+              "// But we can check the structure if contests are returned",
+              "pm.test(\"Contests have required fields\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    ",
+              "    if (jsonData.length > 0) {",
+              "        var contest = jsonData[0];",
+              "        pm.expect(contest).to.have.property('_id');",
+              "        pm.expect(contest).to.have.property('title');",
+              "        pm.expect(contest).to.have.property('platform');",
+              "        pm.expect(contest).to.have.property('start_time');",
+              "    }",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Fetch & Store Contests",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/contests/fetch",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "contests", "fetch"]
+        },
+        "description": "Fetch contests from all platforms and store them in the database"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has correct message\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('message', 'Contests fetched and stored successfully!');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Add Solution Link",
+      "request": {
+        "method": "POST",
+        "url": {
+          "raw": "{{baseUrl}}/api/contests/solution/{{contestId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "contests", "solution", "{{contestId}}"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"solution_link\": \"https://www.youtube.com/watch?v=solution123\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "Add a solution link to an existing contest"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Solution link updated successfully\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('message', 'Solution link updated');",
+              "    pm.expect(jsonData).to.have.property('solution_link', 'https://www.youtube.com/watch?v=solution123');",
+              "});",
+              "",
+              "// Now verify if the solution is actually saved by getting the contest",
+              "// but we need a valid contest ID for this to work"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Add Invalid Solution Link",
+      "request": {
+        "method": "POST",
+        "url": {
+          "raw": "{{baseUrl}}/api/contests/solution/{{contestId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "contests", "solution", "{{contestId}}"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"solution_link\": \"invalid-link\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "Try to add an invalid solution link"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 400\", function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "",
+              "pm.test(\"Error message is correct\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('error', 'Invalid YouTube link');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string",
+      "description": "Base URL for the Contest Tracker API"
+    },
+    {
+      "key": "contestId",
+      "value": "",
+      "type": "string",
+      "description": "ID of a contest (replace with an actual contest ID before running)"
+    }
+  ]
+} 

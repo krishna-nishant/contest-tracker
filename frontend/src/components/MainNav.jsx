@@ -1,9 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "../lib/utils";
 import { Button } from "@/components/ui/button";
-import { Calendar, Github, Menu, X } from "lucide-react";
+import { Calendar, Github, Menu } from "lucide-react";
 import { ModeToggle } from "./ModeToggle";
-import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 function MainNav() {
@@ -43,17 +42,6 @@ function MainNav() {
           >
             Bookmarks
           </Link>
-          {/* <Link
-            to="/submit-solution"
-            className={cn(
-              "hover:text-foreground/80",
-              pathname === "/submit-solution"
-                ? "text-foreground"
-                : "text-foreground/60"
-            )}
-          >
-            Submit Solution
-          </Link> */}
         </div>
 
         <div className="flex items-center gap-2">
@@ -68,24 +56,24 @@ function MainNav() {
           {/* Theme toggle button */}
           <ModeToggle />
 
-          {/* GitHub Repo Link - Desktop */}
+          {/* GitHub Repo Link - Desktop and Mobile */}
           <a
             href="https://github.com/krishna-nishant/contest-tracker"
             target="_blank"
             rel="noopener noreferrer"
             className="hidden md:block"
+            aria-label="GitHub repository"
           >
             <Button variant="outline" size="sm">
               <Github className="h-5 w-5" />
             </Button>
           </a>
 
-          {/* Mobile Menu (Hamburger) - Right side */}
+          {/* Mobile Menu */}
           <Sheet>
             <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" aria-label="Toggle menu">
                 <Menu className="h-5 w-5" />
-                <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[240px] sm:w-[300px]">
@@ -114,15 +102,6 @@ function MainNav() {
                   >
                     Bookmarks
                   </Link>
-                  {/* <Link
-                    to="/submit-solution"
-                    className={cn(
-                      "flex items-center text-lg font-medium transition-colors hover:text-foreground/80",
-                      pathname === "/submit-solution" ? "text-foreground" : "text-foreground/60"
-                    )}
-                  >
-                    Submit Solution
-                  </Link> */}
                   <Link
                     to="/todays-contests"
                     className={cn(
@@ -130,17 +109,9 @@ function MainNav() {
                       pathname === "/todays-contests" ? "text-foreground" : "text-foreground/60"
                     )}
                   >
+                    <Calendar className="mr-2 h-5 w-5" />
                     Today's Contests
                   </Link>
-                  <a
-                    href="https://github.com/krishna-nishant/contest-tracker"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center text-lg font-medium transition-colors hover:text-foreground/80"
-                  >
-                    <Github className="mr-2 h-5 w-5" />
-                    GitHub
-                  </a>
                 </nav>
               </div>
             </SheetContent>

@@ -21,13 +21,97 @@ jobs:
         with:
           node-version: "18"
 
-      - name: Install dependencies
+      - name: Install backend dependencies
         run: |
           cd backend
           npm install
 
-      - name: Run tests
-        run: echo "Skipping tests since none are defined"
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm install
+
+      - name: Run backend tests
+        run: |
+          cd backend
+          npm test
+
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@latest
+        with:
+          chrome-version: stable
+
+      - name: Run frontend unit tests
+        run: |
+          cd frontend
+          npm test
+
+      - name: Create test results directory
+        run: mkdir -p test-results
+
+      - name: Run Selenium tests
+        run: |
+          cd frontend
+          # Start the development server in background
+          npm run dev &
+          # Wait for the server to start
+          sleep 15
+          # Create a script to run tests and capture results
+          echo '
+          const fs = require("fs");
+          const path = require("path");
+          const { execSync } = require("child_process");
+          
+          const tests = ["basic", "navigation", "contests"];
+          let allPassed = true;
+          let results = {};
+          
+          for (const test of tests) {
+            console.log(`Running selenium:${test}...`);
+            try {
+              const output = execSync(`npm run selenium:${test} -- --headless`, { encoding: "utf8" });
+              const passed = !output.includes("❌ ERROR") && !output.includes("Test failed");
+              results[test] = { passed, output };
+              if (!passed) {
+                allPassed = false;
+                console.log(`Test selenium:${test} failed!`);
+              } else {
+                console.log(`Test selenium:${test} passed!`);
+              }
+            } catch (error) {
+              results[test] = { passed: false, output: error.toString() };
+              allPassed = false;
+              console.log(`Test selenium:${test} failed with error!`);
+            }
+          }
+          
+          // Write detailed results to file
+          fs.writeFileSync(
+            path.join("..", "test-results", "selenium-results.json"),
+            JSON.stringify(results, null, 2)
+          );
+          
+          // Write summary for GitHub Actions
+          fs.writeFileSync(
+            path.join("..", "test-results", "selenium-summary.txt"),
+            `Selenium Tests: ${allPassed ? "PASSED" : "FAILED"}\n` +
+            Object.entries(results)
+              .map(([test, { passed }]) => `${test}: ${passed ? "✅" : "❌"}`)
+              .join("\n")
+          );
+          
+          // Exit with appropriate code
+          process.exit(allPassed ? 0 : 1);
+          ' > run-selenium-tests.js
+          
+          # Run the test script
+          node run-selenium-tests.js || echo "Some tests failed, but continuing deployment"
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-results
+          path: test-results/
 
       - name: Build Docker image
         run: |

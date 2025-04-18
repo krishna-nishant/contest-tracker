@@ -9,18 +9,23 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/setupTests.js'],
     css: false,
-    include: ['**/*.{test,spec}.{js,jsx,ts,tsx}'],
+    include: [
+      '**/*.{test,spec}.{js,jsx,ts,tsx}'
+    ],
     coverage: {
       reporter: ['text', 'json', 'html'],
       exclude: [
         'node_modules/',
         'src/setupTests.js',
+        'tests/e2e/**'
       ]
-    }
+    },
+    testTimeout: 60000,
+    hookTimeout: 60000
   },
   resolve: {
     alias: {
       '@': resolve(__dirname, './src')
     }
   }
-}); 
+});

@@ -11,7 +11,17 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "selenium:basic": "node tests/selenium/basic-test.js",
+    "selenium:navigation": "node tests/selenium/navigation-test.js",
+    "selenium:contests": "node tests/selenium/contests-test.js",
+    "selenium:all": "npm run selenium:basic && npm run selenium:navigation && npm run selenium:contests",
+    "selenium:headless:basic": "node tests/selenium/basic-test.js --headless",
+    "selenium:headless:navigation": "node tests/selenium/navigation-test.js --headless",
+    "selenium:headless:contests": "node tests/selenium/contests-test.js --headless",
+    "selenium:headless:all": "npm run selenium:headless:basic && npm run selenium:headless:navigation && npm run selenium:headless:contests",
+    "test:all": "npm run test && npm run selenium:all",
+    "test:ci": "npm run test && npm run selenium:headless:all"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.6",
@@ -22,6 +32,7 @@
     "axios": "^1.8.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
+    "cross-spawn": "^7.0.6",
     "lucide-react": "^0.482.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -31,6 +42,7 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.51.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@types/node": "^20.11.30",
@@ -38,13 +50,17 @@
     "@types/react-dom": "^18.2.22",
     "@vitejs/plugin-react": "^4.2.1",
     "@vitest/coverage-v8": "^3.1.1",
+    "@vitest/ui": "^3.1.1",
+    "@wdio/selenium-standalone-service": "^8.14.0",
     "autoprefixer": "^10.4.18",
+    "chromedriver": "^135.0.1",
     "eslint": "^8.57.0",
     "eslint-plugin-react": "^7.34.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "jsdom": "^26.0.0",
     "postcss": "^8.4.35",
+    "selenium-webdriver": "^4.31.0",
     "tailwindcss": "^3.4.1",
     "vite": "^5.1.6",
     "vitest": "^3.1.1"

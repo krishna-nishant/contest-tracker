@@ -56,15 +56,28 @@ jobs:
           npm run dev &
           # Wait for the server to start
           sleep 15
+          # Create script directory structure including test-results
+          mkdir -p ../test-results
           # Create a script to run tests and capture results
           echo '
-          const fs = require("fs");
-          const path = require("path");
-          const { execSync } = require("child_process");
+          import fs from "fs";
+          import path from "path";
+          import { dirname } from "path";
+          import { fileURLToPath } from "url";
+          import { execSync } from "child_process";
+          
+          const __dirname = dirname(fileURLToPath(import.meta.url));
           
           const tests = ["basic", "navigation", "contests"];
           let allPassed = true;
           let results = {};
+          
+          // Ensure test results directory exists
+          const testResultsDir = path.resolve("../test-results");
+          if (!fs.existsSync(testResultsDir)) {
+            fs.mkdirSync(testResultsDir, { recursive: true });
+            console.log(`Created test results directory at ${testResultsDir}`);
+          }
           
           for (const test of tests) {
             console.log(`Running selenium:${test}...`);
@@ -87,13 +100,13 @@ jobs:
           
           // Write detailed results to file
           fs.writeFileSync(
-            path.join("..", "test-results", "selenium-results.json"),
+            path.join(testResultsDir, "selenium-results.json"),
             JSON.stringify(results, null, 2)
           );
           
           // Write summary for GitHub Actions
           fs.writeFileSync(
-            path.join("..", "test-results", "selenium-summary.txt"),
+            path.join(testResultsDir, "selenium-summary.txt"),
             `Selenium Tests: ${allPassed ? "PASSED" : "FAILED"}\n` +
             Object.entries(results)
               .map(([test, { passed }]) => `${test}: ${passed ? "✅" : "❌"}`)

@@ -4,6 +4,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const cron = require('node-cron');
 const axios = require('axios');
+const path = require('path');
 const contestRoutes = require("./routes/contestRoutes");
 const fetchSolutions = require("./utils/youtubeScraper");
 const fetchContests = require("./utils/fetchContests");
@@ -11,6 +12,8 @@ const connectDB = require("./config/db");
 const app = express();
 connectDB();
 app.use(cors());
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Function to fetch contests and store them in the database
 const fetchAndStoreContests = async () => {
@@ -98,6 +101,11 @@ const startServer = () => {
 
   // Routes
   app.use("/api/contests", contestRoutes);
+
+  // Catch-all route to handle SPA routing
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  });
 
   // Start listening
   const PORT = process.env.PORT || 5000;

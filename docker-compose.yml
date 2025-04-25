@@ -1,0 +1,17 @@
+version: '3'
+services:
+  app:
+    image: contest-tracker:test
+    build:
+      context: .
+    ports:
+      - "3030:5000"
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=mongodb://host.docker.internal:27017/contest-tracker
+      - PORT=5000
+      - YOUTUBE_API_KEY=AIzaSyBZfsfaWiyHbi9jX-c3A2HbiwZk5d5Gu2E
+    restart: unless-stopped
+
+volumes:
+  mongo-data: 

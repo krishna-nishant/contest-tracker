@@ -1,0 +1,30 @@
+# Git
+.git
+.gitignore
+
+# Node.js
+backend/node_modules
+backend/npm-debug.log
+backend/yarn-debug.log
+backend/yarn-error.log
+
+# Build directories
+frontend/node_modules/
+frontend/dist
+frontend/build
+frontend/coverage
+backend/coverage
+
+# Environment files
+backend/.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Miscellaneous
+.DS_Store
+.idea
+.vscode
+*.swp
+*.swo 

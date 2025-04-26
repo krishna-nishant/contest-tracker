@@ -2,10 +2,11 @@ pipeline {
     agent any
 
     environment {
-        IMAGE = "krishna0795/contest-tracker"
+        IMAGE = 'krishna0795/contest-tracker'
         TAG = "v${BUILD_NUMBER}"
         DOCKER_HUB_CREDS = credentials('dockerhub-creds')
         YOUTUBE_API_KEY = credentials('youtube-api-key')
+        MONGODB_URI = credentials('mongodb-uri')
     }
 
     stages {
@@ -30,30 +31,24 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                bat "docker build -t %IMAGE%:%TAG% ."
+                bat 'docker build -t %IMAGE%:%TAG% .'
             }
         }
 
         stage('Push Docker Image') {
             steps {
                 bat 'docker login -u %DOCKER_HUB_CREDS_USR% -p %DOCKER_HUB_CREDS_PSW%'
-                bat "docker tag %IMAGE%:%TAG% %IMAGE%:latest"
-                bat "docker push %IMAGE%:%TAG%"
-                bat "docker push %IMAGE%:latest"
+                bat 'docker tag %IMAGE%:%TAG% %IMAGE%:latest'
+                bat 'docker push %IMAGE%:%TAG%'
+                bat 'docker push %IMAGE%:latest'
             }
         }
 
         stage('Deploy Locally') {
             steps {
                 bat '''
-                    docker ps -q --filter "name=contest-tracker" > temp.txt
-                    set /p containerId=<temp.txt
-                    if defined containerId (
-                        docker stop %containerId%
-                        docker rm %containerId%
-                    )
-                    del temp.txt
-                    docker run -d -p 3030:5000 -e PORT=5000 -e YOUTUBE_API_KEY=%YOUTUBE_API_KEY% --name contest-tracker %IMAGE%:%TAG%
+                    docker rm -f contest-tracker 2>NUL
+                    docker run -d -p 3030:5000 -e PORT=5000 -e YOUTUBE_API_KEY=%YOUTUBE_API_KEY% -e MONGODB_URI=%MONGODB_URI% --name contest-tracker %IMAGE%:%TAG%
                 '''
             }
         }
@@ -67,4 +62,4 @@ pipeline {
             echo 'Pipeline failed'
         }
     }
-} 
+}

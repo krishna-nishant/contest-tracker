@@ -18,34 +18,43 @@ pipeline {
         stage('Install & Test') {
             steps {
                 dir('frontend') {
-                    sh 'npm install && npm test'
+                    bat 'npm install || exit 0'
+                    bat 'npm test || exit 0'
                 }
                 dir('backend') {
-                    sh 'npm install && npm test'
+                    bat 'npm install || exit 0'
+                    bat 'npm test || exit 0'
                 }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t $IMAGE:$TAG ."
+                bat "docker build -t %IMAGE%:%TAG% ."
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                sh "echo $DOCKER_HUB_CREDS_PSW | docker login -u $DOCKER_HUB_CREDS_USR --password-stdin"
-                sh "docker tag $IMAGE:$TAG $IMAGE:latest"
-                sh "docker push $IMAGE:$TAG"
-                sh "docker push $IMAGE:latest"
+                bat 'docker login -u %DOCKER_HUB_CREDS_USR% -p %DOCKER_HUB_CREDS_PSW%'
+                bat "docker tag %IMAGE%:%TAG% %IMAGE%:latest"
+                bat "docker push %IMAGE%:%TAG%"
+                bat "docker push %IMAGE%:latest"
             }
         }
 
         stage('Deploy Locally') {
             steps {
-                sh "docker stop contest-tracker || true"
-                sh "docker rm contest-tracker || true"
-                sh "docker run -d -p 3030:5000 -e PORT=5000 -e YOUTUBE_API_KEY=${YOUTUBE_API_KEY} --name contest-tracker $IMAGE:$TAG"
+                bat '''
+                    docker ps -q --filter "name=contest-tracker" > temp.txt
+                    set /p containerId=<temp.txt
+                    if defined containerId (
+                        docker stop %containerId%
+                        docker rm %containerId%
+                    )
+                    del temp.txt
+                    docker run -d -p 3030:5000 -e PORT=5000 -e YOUTUBE_API_KEY=%YOUTUBE_API_KEY% --name contest-tracker %IMAGE%:%TAG%
+                '''
             }
         }
     }

@@ -6,7 +6,9 @@ pipeline {
         TAG = "v${BUILD_NUMBER}"
         DOCKER_HUB_CREDS = credentials('dockerhub-creds')
         YOUTUBE_API_KEY = credentials('youtube-api-key')
-        MONGODB_URI = credentials('mongodb-uri')
+        MONGO_URI = credentials('mongodb-uri')
+        RENDER_API_KEY = credentials('render-api-key')
+        VERCEL_TOKEN = credentials('vercel-token')
     }
 
     stages {
@@ -44,11 +46,25 @@ pipeline {
             }
         }
 
+        stage('Deploy Backend to Render') {
+            steps {
+                bat 'curl -X POST "https://api.render.com/deploy/srv-cvbitmlds78s73albfc0?key=%RENDER_API_KEY%" -v -f'
+            }
+        }
+
+        stage('Deploy Frontend to Vercel') {
+            steps {
+                dir('frontend') {
+                    bat 'curl -X POST "https://api.vercel.com/v1/integrations/deploy/%VERCEL_TOKEN%" -v -f'
+                }
+            }
+        }
+
         stage('Deploy Locally') {
             steps {
                 bat '''
                     docker rm -f contest-tracker 2>NUL
-                    docker run -d -p 3030:5000 -e PORT=5000 -e YOUTUBE_API_KEY=%YOUTUBE_API_KEY% -e MONGODB_URI=%MONGODB_URI% --name contest-tracker %IMAGE%:%TAG%
+                    docker run -d -p 3030:5000 -e PORT=5000 -e YOUTUBE_API_KEY=%YOUTUBE_API_KEY% -e MONGO_URI=%MONGO_URI% --name contest-tracker %IMAGE%:%TAG%
                 '''
             }
         }
